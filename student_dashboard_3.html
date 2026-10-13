@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Student Academic Performance Dashboard</title>
+<style>
+:root{--navy:#14284B;--teal:#1F9E9A;--orange:#F29F3D;--red:#D6455D;--grey:#6B7280;--bg:#F3F6FA;--card:#fff;--line:#E3E8EF}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,Arial,sans-serif;background:var(--bg);color:#1f2937}
+header{background:var(--navy);color:#fff;padding:18px 28px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between}
+header h1{margin:0;font-size:22px;letter-spacing:.5px}
+header p{margin:2px 0 0;font-size:12px;opacity:.75}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+button,.btn{font:inherit;font-size:13px;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;background:var(--teal);color:#fff}
+button.ghost,.btn.ghost{background:rgba(255,255,255,.14)}
+button.sec{background:#e8edf3;color:var(--navy)}
+button.danger{background:var(--red)}
+button:hover,.btn:hover{filter:brightness(1.08)}
+main{max-width:1280px;margin:0 auto;padding:22px 20px 40px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.kpi{border-radius:10px;color:#fff;padding:16px 20px}
+.kpi b{display:block;font-size:34px;line-height:1.1}
+.kpi span{font-size:12px;letter-spacing:1px;opacity:.9}
+.kpi small{display:block;font-size:12px;margin-top:4px;opacity:.85;min-height:15px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card h2{margin:0 0 10px;font-size:14px;color:var(--navy);letter-spacing:.3px}
+.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+svg{width:100%;height:auto;display:block}
+svg .lb{font-size:12px;fill:#374151}svg .vl{font-size:12px;fill:#111;font-weight:600}svg .ax{font-size:11px;fill:var(--grey)}
+form{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:end}
+label{font-size:11px;color:var(--grey);display:block;margin-bottom:3px}
+input,select{width:100%;font:inherit;font-size:13px;padding:7px 9px;border:1px solid #cfd6df;border-radius:6px;background:#fff}
+.formbtns{grid-column:span 5;display:flex;gap:8px}
+.msg{grid-column:span 5;font-size:12px;min-height:16px;color:var(--red)}
+.tablebar{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.tablebar input{max-width:260px}.tablebar select{max-width:200px}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{background:#f7f9fc;color:var(--navy);font-size:12px}
+td.n,th.n{text-align:right}
+.low{color:var(--red);font-weight:700}
+.tag{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.pass{background:#dff3f2;color:#0d6f6b}.fail{background:#fde4e8;color:#a3243b}
+td button{padding:3px 9px;font-size:12px;margin-right:4px}
+.stat th:first-child,.stat td:first-child{font-weight:600;color:var(--navy)}
+.insights li{margin:6px 0;font-size:13px}
+.attn div{padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.attn small{color:var(--grey);display:block}
+.empty{color:var(--grey);font-size:13px}
+footer{text-align:center;font-size:12px;color:var(--grey);padding:10px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.s4,.s5,.s6,.s7,.s8{grid-column:span 12}form{grid-template-columns:repeat(2,1fr)}.formbtns,.msg{grid-column:span 2}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>STUDENT ACADEMIC PERFORMANCE DASHBOARD</h1>
+    <p>Capstone Project &bull; Python + Data Analytics &bull; Manage records, analyse performance, present insights</p>
+  </div>
+  <div class="tools">
+    <label class="btn ghost" style="margin:0;color:#fff">Import CSV<input id="csvIn" type="file" accept=".csv" hidden></label>
+    <button class="ghost" id="exportBtn">Export CSV</button>
+    <button class="ghost" id="demoBtn">Load demo data</button>
+    <button class="ghost" id="clearBtn">Clear all</button>
+  </div>
+</header>
+
+<main>
+  <section class="kpis">
+    <div class="kpi" style="background:var(--navy)"><b id="kStud">0</b><span>STUDENTS</span><small>&nbsp;</small></div>
+    <div class="kpi" style="background:var(--teal)"><b id="kAvg">0%</b><span>AVERAGE SCORE</span><small id="kAvgS">&nbsp;</small></div>
+    <div class="kpi" style="background:var(--orange)"><b id="kPass">0%</b><span>PASS RATE</span><small id="kPassS">&nbsp;</small></div>
+    <div class="kpi" style="background:var(--red)"><b id="kTop">0</b><span>TOP SCORE</span><small id="kTopS">&nbsp;</small></div>
+  </section>
+
+  <section class="grid">
+    <div class="card s12">
+      <h2 id="formTitle">ADD STUDENT</h2>
+      <form id="stuForm" autocomplete="off">
+        <div><label>Roll number</label><input id="fRoll" required></div>
+        <div style="grid-column:span 4"><label>Name</label><input id="fName" required></div>
+        <div id="markBoxes" style="display:contents"></div>
+        <div class="formbtns"><button type="submit" id="saveBtn">Add student</button><button type="button" class="sec" id="cancelBtn" hidden>Cancel edit</button></div>
+        <div class="msg" id="formMsg"></div>
+      </form>
+    </div>
+
+    <div class="card s6"><h2>SUBJECT-WISE AVERAGE (strengths &amp; weak areas)</h2><div id="chSub"></div></div>
+    <div class="card s6"><h2>GRADE DISTRIBUTION</h2><div id="chGrade"></div></div>
+
+    <div class="card s4"><h2>PASS VS FAIL</h2><div id="chPF"></div></div>
+    <div class="card s4"><h2>SCORE DISTRIBUTION (student averages)</h2><div id="chHist"></div></div>
+    <div class="card s4"><h2>SCORE RANGE BY SUBJECT</h2><div id="chRange"></div><p class="empty" style="margin:4px 0 0;font-size:11px">Bar = min to max, dot = mean</p></div>
+
+    <div class="card s5"><h2>TOP PERFORMERS</h2><div id="chTop"></div></div>
+    <div class="card s4"><h2>NEEDS ATTENTION</h2><div class="attn" id="attn"></div></div>
+    <div class="card s3" style="grid-column:span 3"><h2>INSIGHTS</h2><ul class="insights" id="insights" style="padding-left:18px;margin:0"></ul></div>
+
+    <div class="card s12">
+      <h2>DESCRIPTIVE STATISTICS</h2>
+      <div class="wrap"><table class="stat" id="statTable"></table></div>
+    </div>
+
+    <div class="card s12">
+      <h2>STUDENT RECORDS</h2>
+      <div class="tablebar">
+        <input id="q" placeholder="Search by roll number or name">
+        <select id="sortBy">
+          <option value="roll">Sort: Roll number</option>
+          <option value="name">Sort: Name</option>
+          <option value="avgDesc">Sort: Average (high to low)</option>
+          <option value="avgAsc">Sort: Average (low to high)</option>
+        </select>
+        <span id="count" class="empty" style="align-self:center"></span>
+      </div>
+      <div class="wrap"><table id="recTable"></table></div>
+    </div>
+  </section>
+</main>
+<footer>Pass rule: a student passes when every subject is at least 40. Grades use the student's average: O 90+, A+ 80+, A 70+, B+ 60+, B 50+, C 40+, F below 40.</footer>
+
+<script>
+"use strict";
+const SUBJECTS = ["Maths","Physics","Chemistry","English","Computer Science"];
+const SHORT = ["Maths","Physics","Chem","English","CS"];
+const PASS_MARK = 40;
+const GRADES = [[90,"O"],[80,"A+"],[70,"A"],[60,"B+"],[50,"B"],[40,"C"],[0,"F"]];
+const GRADE_ORDER = GRADES.map(g=>g[1]);
+const C = {navy:"#14284B",teal:"#1F9E9A",orange:"#F29F3D",red:"#D6455D",grey:"#6B7280"};
+const KEY = "student-dashboard-v1";
+const DEMO = [["S001", "Aarav Kumar", 93, 97, 94, 97, 100], ["S002", "Divya Devi", 81, 86, 82, 85, 79], ["S003", "Karthik Priya", 78, 80, 85, 86, 74], ["S004", "Meena Sri", 72, 78, 66, 74, 29], ["S005", "Nithya Selvan", 83, 78, 77, 78, 87], ["S006", "Pranav Anand", 73, 74, 77, 75, 74], ["S007", "Ramya Venkat", 77, 78, 78, 78, 36], ["S008", "Suresh Raj", 95, 90, 97, 92, 95], ["S009", "Tamil Murugan", 73, 81, 71, 69, 77], ["S010", "Uma Balaji", 74, 79, 89, 74, 75], ["S011", "Vignesh Kumar", 87, 88, 85, 85, 89], ["S012", "Yamini Devi", 87, 80, 85, 85, 80], ["S013", "Bala Priya", 84, 79, 88, 84, 84], ["S014", "Deepak Sri", 73, 75, 66, 70, 78], ["S015", "Gayathri Selvan", 72, 86, 73, 86, 78], ["S016", "Harish Anand", 91, 88, 80, 94, 94], ["S017", "Indhu Venkat", 73, 72, 72, 68, 78], ["S018", "Jeeva Raj", 76, 79, 75, 76, 73], ["S019", "Kavin Murugan", 75, 68, 74, 69, 66], ["S020", "Lakshmi Balaji", 72, 71, 73, 71, 72], ["S021", "Mohan Kumar", 63, 65, 78, 66, 64], ["S022", "Nandha Devi", 82, 88, 73, 80, 78], ["S023", "Oviya Priya", 65, 77, 73, 74, 70], ["S024", "Priya Sri", 87, 82, 84, 79, 78], ["S025", "Rahul Selvan", 90, 81, 85, 83, 81], ["S026", "Aarav Anand", 79, 84, 80, 80, 81], ["S027", "Divya Venkat", 71, 68, 67, 62, 58], ["S028", "Karthik Raj", 83, 83, 78, 81, 83], ["S029", "Meena Murugan", 86, 87, 80, 90, 76], ["S030", "Nithya Balaji", 37, 78, 78, 78, 78], ["S031", "Pranav Kumar", 63, 25, 67, 72, 76], ["S032", "Ramya Devi", 69, 80, 79, 78, 79], ["S033", "Suresh Priya", 71, 68, 75, 71, 67], ["S034", "Tamil Sri", 79, 76, 79, 72, 73], ["S035", "Uma Selvan", 85, 85, 91, 86, 92], ["S036", "Vignesh Anand", 78, 87, 70, 81, 76], ["S037", "Yamini Venkat", 82, 75, 80, 86, 82], ["S038", "Bala Raj", 89, 87, 94, 88, 78], ["S039", "Deepak Murugan", 75, 68, 62, 76, 85], ["S040", "Gayathri Balaji", 82, 76, 77, 87, 82], ["S041", "Harish Kumar", 83, 83, 83, 87, 86], ["S042", "Indhu Devi", 84, 78, 85, 79, 88], ["S043", "Jeeva Priya", 67, 73, 74, 67, 82], ["S044", "Kavin Sri", 90, 81, 87, 85, 70], ["S045", "Lakshmi Selvan", 93, 92, 92, 87, 91], ["S046", "Mohan Anand", 71, 78, 73, 72, 79], ["S047", "Nandha Venkat", 86, 86, 79, 96, 93], ["S048", "Oviya Raj", 88, 87, 84, 84, 82], ["S049", "Priya Murugan", 77, 78, 85, 81, 78], ["S050", "Rahul Balaji", 92, 92, 100, 98, 95]];
+
+let students = [];      // [{roll, name, marks:[5 numbers]}]
+let editingRoll = null;
+
+/* ---------- storage ---------- */
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(students)); }catch(e){} }
+function load(){
+  try{ const raw = localStorage.getItem(KEY); if(raw){ students = JSON.parse(raw); return; } }catch(e){}
+  students = DEMO.map(r=>({roll:r[0],name:r[1],marks:r.slice(2)}));
+}
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
+const median = a => { const s=[...a].sort((x,y)=>x-y), m=s.length>>1; return s.length%2? s[m] : (s[m-1]+s[m])/2; };
+const mode = a => { const f={}; a.forEach(v=>f[v]=(f[v]||0)+1); const mx=Math.max(...Object.values(f)); return Math.min(...Object.keys(f).filter(k=>f[k]===mx).map(Number)); };
+const sd = a => { const m=mean(a); return Math.sqrt(mean(a.map(v=>(v-m)**2))); };
+const r1 = n => Math.round(n*10)/10;
+const gradeOf = avg => GRADES.find(g=>avg>=g[0])[1];
+
+function enrich(s){
+  const avg = mean(s.marks);
+  return {...s, avg, grade:gradeOf(avg), pass: Math.min(...s.marks) >= PASS_MARK};
+}
+
+/* ---------- SVG chart helpers ---------- */
+function barH(items, max, w=480){
+  const rh=34, lx=130, tw=w-lx-52;
+  let s=`<svg viewBox="0 0 ${w} ${items.length*rh+6}">`;
+  items.forEach((it,i)=>{
+    const y=i*rh+4, l=Math.max(0,Math.min(1,it.value/max))*tw;
+    s+=`<text x="${lx-8}" y="${y+19}" text-anchor="end" class="lb">${esc(it.label)}</text>
+        <rect x="${lx}" y="${y+4}" width="${tw}" height="20" rx="4" fill="#eef2f6"/>
+        <rect x="${lx}" y="${y+4}" width="${l}" height="20" rx="4" fill="${it.color}"/>
+        <text x="${lx+tw+8}" y="${y+19}" class="vl">${it.text ?? it.value}</text>`;
+  });
+  return s+"</svg>";
+}
+function barV(items, color, w=480, h=230){
+  const pl=30, pb=26, pt=22, bw=(w-pl-10)/items.length, mx=Math.max(1,...items.map(i=>i.value));
+  let s=`<svg viewBox="0 0 ${w} ${h}">`;
+  for(let g=0; g<=4; g++){ const y=pt+(h-pt-pb)*(1-g/4); s+=`<line x1="${pl}" x2="${w-6}" y1="${y}" y2="${y}" stroke="#e8edf3"/><text x="${pl-5}" y="${y+4}" text-anchor="end" class="ax">${Math.round(mx*g/4)}</text>`; }
+  items.forEach((it,i)=>{
+    const bh=(h-pt-pb)*it.value/mx, x=pl+i*bw+bw*0.15, y=h-pb-bh;
+    s+=`<rect x="${x}" y="${y}" width="${bw*0.7}" height="${bh}" rx="3" fill="${it.color||color}"/>
+        <text x="${x+bw*0.35}" y="${y-5}" text-anchor="middle" class="vl">${it.value}</text>
+        <text x="${x+bw*0.35}" y="${h-8}" text-anchor="middle" class="ax">${esc(it.label)}</text>`;
+  });
+  return s+"</svg>";
+}
+function donut(pass, fail){
+  const tot=pass+fail||1, r=70, c=2*Math.PI*r, pl=c*pass/tot;
+  return `<svg viewBox="0 0 300 200"><g transform="translate(100,100) rotate(-90)">
+    <circle r="${r}" fill="none" stroke="${C.red}" stroke-width="26"/>
+    <circle r="${r}" fill="none" stroke="${C.teal}" stroke-width="26" stroke-dasharray="${pl} ${c}"/></g>
+    <text x="100" y="106" text-anchor="middle" style="font-size:22px;font-weight:700;fill:${C.navy}">${Math.round(pass/tot*100)}%</text>
+    <rect x="200" y="70" width="12" height="12" fill="${C.teal}"/><text x="218" y="81" class="lb">Pass (${pass})</text>
+    <rect x="200" y="96" width="12" height="12" fill="${C.red}"/><text x="218" y="107" class="lb">Fail (${fail})</text></svg>`;
+}
+function rangeChart(rows, w=480){
+  const rh=36, lx=70, tw=w-lx-14;
+  const lo=Math.min(...rows.map(r=>r.min)), x0=Math.floor(lo/10)*10, sc=v=>lx+(v-x0)/(100-x0)*tw;
+  let s=`<svg viewBox="0 0 ${w} ${rows.length*rh+28}">`;
+  for(let v=x0; v<=100; v+=10){ s+=`<line x1="${sc(v)}" x2="${sc(v)}" y1="0" y2="${rows.length*rh}" stroke="#e8edf3"/><text x="${sc(v)}" y="${rows.length*rh+16}" text-anchor="middle" class="ax">${v}</text>`; }
+  rows.forEach((r,i)=>{
+    const y=i*rh+rh/2;
+    s+=`<text x="${lx-8}" y="${y+4}" text-anchor="end" class="lb">${esc(r.label)}</text>
+        <line x1="${sc(r.min)}" x2="${sc(r.max)}" y1="${y}" y2="${y}" stroke="#9fd3d0" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="${sc(r.mean)}" cy="${y}" r="6" fill="${C.navy}"/>`;
+  });
+  return s+"</svg>";
+}
+
+/* ---------- render ---------- */
+function render(){
+  const data = students.map(enrich);
+  renderKpis(data);
+  renderCharts(data);
+  renderStats(data);
+  renderTable(data);
+}
+
+function renderKpis(d){
+  if(!d.length){ ["kStud","kAvg","kPass","kTop"].forEach(id=>$(id).textContent="-"); ["kAvgS","kPassS","kTopS"].forEach(id=>$(id).innerHTML="&nbsp;"); return; }
+  const avg=mean(d.map(x=>x.avg)), pr=d.filter(x=>x.pass).length/d.length*100, top=d.reduce((a,b)=>b.avg>a.avg?b:a);
+  $("kStud").textContent=d.length;
+  $("kAvg").textContent=r1(avg)+"%";
+  $("kAvgS").textContent="Median "+r1(median(d.map(x=>x.avg)))+"%";
+  $("kPass").textContent=Math.round(pr)+"%";
+  $("kPassS").textContent=d.filter(x=>x.pass).length+" of "+d.length+" students";
+  $("kTop").textContent=Math.round(top.avg);
+  $("kTopS").textContent=top.name;
+}
+
+function renderCharts(d){
+  const none='<p class="empty">Add students to see this chart.</p>';
+  if(!d.length){ ["chSub","chGrade","chPF","chHist","chRange","chTop"].forEach(id=>$(id).innerHTML=none); $("attn").innerHTML=none; $("insights").innerHTML=""; return; }
+
+  const subAvg = SUBJECTS.map((s,i)=>({label:s, value:mean(d.map(x=>x.marks[i]))}));
+  const overall = mean(subAvg.map(x=>x.value));
+  const sorted=[...subAvg].sort((a,b)=>b.value-a.value);
+  $("chSub").innerHTML = barH(sorted.map(x=>({label:x.label, value:x.value, text:r1(x.value), color: x.value<overall-2?C.red:C.teal})),100);
+
+  const gc = GRADE_ORDER.map(g=>({label:g, value:d.filter(x=>x.grade===g).length}));
+  $("chGrade").innerHTML = barV(gc, C.orange);
+
+  const p=d.filter(x=>x.pass).length;
+  $("chPF").innerHTML = donut(p, d.length-p);
+
+  const avgs=d.map(x=>x.avg), lo=Math.floor(Math.min(...avgs)/5)*5, hi=Math.max(lo+5,Math.ceil((Math.max(...avgs)+0.001)/5)*5);
+  const bins=[]; for(let b=lo;b<hi;b+=5) bins.push({label:String(b), value:avgs.filter(v=>v>=b&&v<b+5).length});
+  $("chHist").innerHTML = barV(bins, C.teal, 300, 230);
+
+  $("chRange").innerHTML = rangeChart(SUBJECTS.map((s,i)=>{ const m=d.map(x=>x.marks[i]); return {label:SHORT[i], min:Math.min(...m), max:Math.max(...m), mean:mean(m)}; }));
+
+  const top=[...d].sort((a,b)=>b.avg-a.avg).slice(0,8);
+  $("chTop").innerHTML = barH(top.map(x=>({label:x.name, value:x.avg, text:r1(x.avg), color:C.navy})),100);
+
+  const risk=d.filter(x=>!x.pass).sort((a,b)=>a.avg-b.avg);
+  $("attn").innerHTML = risk.length ? risk.slice(0,6).map(x=>{
+    const i=x.marks.indexOf(Math.min(...x.marks));
+    return `<div><b>${esc(x.name)}</b> <span class="tag fail">Fail</span><small>${SUBJECTS[i]}: ${x.marks[i]} &nbsp;|&nbsp; average ${r1(x.avg)}</small></div>`;
+  }).join("") : '<p class="empty">No failing students.</p>';
+
+  const best=sorted[0], worst=sorted[sorted.length-1], sdAll=sd(avgs);
+  $("insights").innerHTML = [
+    `Strongest subject: <b>${best.label}</b> (${r1(best.value)}).`,
+    `Weakest subject: <b>${worst.label}</b> (${r1(worst.value)}).`,
+    `Score spread (SD) across students: <b>${r1(sdAll)}</b> marks.`,
+    `${risk.length} student${risk.length===1?"":"s"} below the pass mark in at least one subject.`,
+    `${d.filter(x=>x.grade==="O"||x.grade==="A+").length} students hold grade O or A+.`
+  ].map(t=>`<li>${t}</li>`).join("");
+}
+
+function renderStats(d){
+  const t=$("statTable");
+  if(!d.length){ t.innerHTML='<tr><td class="empty">No data.</td></tr>'; return; }
+  const cols=[...SUBJECTS.map((s,i)=>({n:s, v:d.map(x=>x.marks[i])})), {n:"Overall average", v:d.map(x=>x.avg)}];
+  const rows=[["Mean",mean],["Median",median],["Mode",mode],["Std deviation",sd],["Minimum",a=>Math.min(...a)],["Maximum",a=>Math.max(...a)]];
+  t.innerHTML = "<tr><th></th>"+cols.map(c=>`<th class="n">${c.n}</th>`).join("")+"</tr>" +
+    rows.map(([n,f])=>`<tr><td>${n}</td>`+cols.map(c=>`<td class="n">${r1(f(c.v))}</td>`).join("")+"</tr>").join("");
+}
+
+function renderTable(d){
+  const q=$("q").value.trim().toLowerCase(), sb=$("sortBy").value;
+  let rows=d.filter(x=>!q||x.roll.toLowerCase().includes(q)||x.name.toLowerCase().includes(q));
+  const cmp={roll:(a,b)=>a.roll.localeCompare(b.roll,undefined,{numeric:true}), name:(a,b)=>a.name.localeCompare(b.name), avgDesc:(a,b)=>b.avg-a.avg, avgAsc:(a,b)=>a.avg-b.avg}[sb];
+  rows.sort(cmp);
+  $("count").textContent = rows.length+" of "+d.length+" students";
+  $("recTable").innerHTML = "<tr><th>Roll</th><th>Name</th>"+SHORT.map(s=>`<th class="n">${s}</th>`).join("")+"<th class=\"n\">Average</th><th>Grade</th><th>Result</th><th></th></tr>" +
+    (rows.length? rows.map(x=>`<tr><td>${esc(x.roll)}</td><td>${esc(x.name)}</td>`+
+      x.marks.map(m=>`<td class="n ${m<PASS_MARK?"low":""}">${m}</td>`).join("")+
+      `<td class="n"><b>${r1(x.avg)}</b></td><td>${x.grade}</td><td><span class="tag ${x.pass?"pass":"fail"}">${x.pass?"Pass":"Fail"}</span></td>`+
+      `<td><button class="sec" data-edit="${esc(x.roll)}">Edit</button><button class="danger" data-del="${esc(x.roll)}">Delete</button></td></tr>`).join("")
+     : `<tr><td colspan="11" class="empty">No matching records.</td></tr>`);
+}
+
+/* ---------- form ---------- */
+$("markBoxes").innerHTML = SUBJECTS.map((s,i)=>`<div><label>${s} (0-100)</label><input type="number" min="0" max="100" step="1" id="m${i}" required></div>`).join("");
+
+function resetForm(){
+  editingRoll=null; $("stuForm").reset(); $("fRoll").disabled=false;
+  $("formTitle").textContent="ADD STUDENT"; $("saveBtn").textContent="Add student"; $("cancelBtn").hidden=true; $("formMsg").textContent="";
+}
+$("cancelBtn").onclick=resetForm;
+
+$("stuForm").onsubmit=e=>{
+  e.preventDefault();
+  const roll=$("fRoll").value.trim(), name=$("fName").value.trim().replace(/\s+/g," ");
+  const marks=SUBJECTS.map((_,i)=>Number($("m"+i).value));
+  const msg=$("formMsg");
+  if(!roll||!name){ msg.textContent="Roll number and name are required."; return; }
+  if(marks.some(m=>!Number.isInteger(m)||m<0||m>100)){ msg.textContent="Marks must be whole numbers from 0 to 100."; return; }
+  if(editingRoll===null){
+    if(students.some(s=>s.roll.toLowerCase()===roll.toLowerCase())){ msg.textContent="That roll number already exists. Use Edit to change it."; return; }
+    students.push({roll,name,marks});
+  } else {
+    const s=students.find(x=>x.roll===editingRoll); s.name=name; s.marks=marks;
+  }
+  save(); resetForm(); render();
+};
+
+document.addEventListener("click",e=>{
+  const ed=e.target.dataset.edit, del=e.target.dataset.del;
+  if(ed!==undefined){
+    const s=students.find(x=>x.roll===ed); if(!s) return;
+    editingRoll=s.roll; $("fRoll").value=s.roll; $("fRoll").disabled=true; $("fName").value=s.name;
+    s.marks.forEach((m,i)=>$("m"+i).value=m);
+    $("formTitle").textContent="EDIT STUDENT: "+s.roll; $("saveBtn").textContent="Save changes"; $("cancelBtn").hidden=false;
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  if(del!==undefined){
+    const s=students.find(x=>x.roll===del);
+    if(s && confirm("Delete "+s.name+"?")){ students=students.filter(x=>x!==s); save(); if(editingRoll===del) resetForm(); render(); }
+  }
+});
+
+$("q").oninput=()=>renderTable(students.map(enrich));
+$("sortBy").onchange=()=>renderTable(students.map(enrich));
+
+/* ---------- toolbar: demo, clear, import, export ---------- */
+$("demoBtn").onclick=()=>{ if(!students.length||confirm("Replace current records with the demo data?")){ students=DEMO.map(r=>({roll:r[0],name:r[1],marks:r.slice(2)})); save(); resetForm(); render(); } };
+$("clearBtn").onclick=()=>{ if(confirm("Delete all student records?")){ students=[]; save(); resetForm(); render(); } };
+
+$("exportBtn").onclick=()=>{
+  const d=students.map(enrich);
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const lines=[["Roll","Name",...SUBJECTS,"Average","Grade","Result"].map(q).join(",")]
+    .concat(d.map(x=>[x.roll,x.name,...x.marks,r1(x.avg),x.grade,x.pass?"Pass":"Fail"].map(q).join(",")));
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([lines.join("\r\n")],{type:"text/csv"}));
+  a.download="student_performance.csv"; a.click(); URL.revokeObjectURL(a.href);
+};
+
+function parseCSV(text){
+  const rows=[]; let row=[], cur="", inQ=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(inQ){ if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else inQ=false; } else cur+=ch; }
+    else if(ch==='"') inQ=true;
+    else if(ch===","){ row.push(cur); cur=""; }
+    else if(ch==="\n"||ch==="\r"){ if(ch==="\r"&&text[i+1]==="\n") i++; row.push(cur); cur=""; if(row.some(c=>c.trim()!=="")) rows.push(row); row=[]; }
+    else cur+=ch;
+  }
+  row.push(cur); if(row.some(c=>c.trim()!=="")) rows.push(row);
+  return rows;
+}
+$("csvIn").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const rows=parseCSV(String(rd.result).replace(/^\uFEFF/,""));
+    if(rows.length<2){ alert("The CSV file looks empty."); return; }
+    const head=rows[0].map(h=>h.trim().toLowerCase());
+    const idx=n=>head.indexOf(n.toLowerCase());
+    const iR=idx("Roll"), iN=idx("Name"), iS=SUBJECTS.map(idx);
+    if(iR<0||iN<0||iS.some(i=>i<0)){ alert("CSV needs these columns: Roll, Name, "+SUBJECTS.join(", ")); return; }
+    const map=new Map(); let fixed=0;
+    rows.slice(1).forEach(r=>{
+      const roll=(r[iR]||"").trim(), name=(r[iN]||"").trim().replace(/\s+/g," ");
+      if(!roll||!name) return;
+      const raw=iS.map(i=>parseFloat(r[i]));
+      const valid=raw.filter(v=>!isNaN(v));
+      const fill=valid.length? median(valid):0;
+      const marks=raw.map(v=>{ if(isNaN(v)){fixed++; return Math.round(fill);} const c=Math.min(100,Math.max(0,Math.round(v))); if(c!==v) fixed++; return c; });
+      map.set(roll.toLowerCase(),{roll,name,marks});          // later duplicate replaces earlier
+    });
+    students=[...map.values()]; save(); resetForm(); render();
+    alert("Imported "+students.length+" students."+(fixed?" Cleaned "+fixed+" missing or out-of-range marks.":""));
+  };
+  rd.readAsText(f); e.target.value="";
+};
+
+load(); render();
+</script>
+</body>
+</html>
